@@ -1,0 +1,10 @@
+[package]
+name = "uefivardump"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde_json = { version = "1.0.116", default-features = false, features = ["alloc"] }
+ucs2 = "0.3.3"
+uefi = { version = "0.28.0", features = ["alloc", "global_allocator"] }
+serde = { version = "1.0.198", features = ["derive"] }
