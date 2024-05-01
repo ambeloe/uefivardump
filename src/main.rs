@@ -79,6 +79,7 @@ unsafe fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
     let mut reboot: bool = false;
 
     //loop vars
+    let mut first: bool = true;
     let mut temp_var: UefiVar = UefiVar::default();
     let mut ucsbuf: [u8; 0xfff] = [0u8; 0xfff];
 
@@ -171,13 +172,20 @@ unsafe fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
             file.flush().expect("error flushing file buffer (argdump)");
             file.close()
         } else {
-            print!("{},", json);
+            if first {
+                print!("{}", json);
+                first = false;
+            } else {
+                print!(",{}", json);
+            }
+            
         }
     }
 
     if output_file != "-" {
         let mut file = open_file!(&output_file, FileMode::ReadWrite);
-        seek_end!(file);
+        let flen = file.get_boxed_info::<FileInfo>().expect("error getting file info").file_size();
+        file.set_position(flen-1).expect("error seeking");
 
         file.write("]".as_bytes()).expect("error writing ending bracket to file");
         file.flush().expect("error flushing file buffer (final)");
