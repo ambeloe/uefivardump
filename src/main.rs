@@ -42,7 +42,7 @@ fn panic(info: &PanicInfo) -> ! {
 
 #[entry]
 unsafe fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
-    uefi::helpers::init(&mut st);
+    let _ = uefi::helpers::init(&mut st);
     // .expect("Unexpected error while initializing UEFI services");
     // handling the panic is pointless without the handler working
 
@@ -54,7 +54,6 @@ unsafe fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
     let args: Vec<String>;
     let rs: &RuntimeServices;
     let keys: Vec<VariableKey>;
-    let vars: Vec<UefiVar>;
     let mut u16buf: [u16; 0xfff] = [0u16; 0xfff];
     let mut json: String;
 
@@ -142,7 +141,6 @@ unsafe fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
     }
 
     keys = rs.variable_keys().expect("error getting variable keys: {}");
-    vars = Vec::with_capacity(keys.len());
     for k in keys.iter() {
         // println!("LOOP");
         temp_var.name = cstr16_to_string(k.name().unwrap(), &mut ucsbuf).expect("couldn't convert name to utf-8");
