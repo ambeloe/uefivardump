@@ -188,7 +188,7 @@ unsafe fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
     
     if reboot {
         //skip if not supported
-        if rs.get_variable_boxed(cstr16!("OsIndications"), &VariableVendor::GLOBAL_VARIABLE).unwrap_or((Box::new([0u8]), VariableAttributes::default())).0[0].bitand(1) > 0 {
+        if rs.get_variable_boxed(cstr16!("OsIndicationsSupport"), &VariableVendor::GLOBAL_VARIABLE).unwrap_or((Box::new([0u8]), VariableAttributes::default())).0[0].bitand(1) > 0 {
             let mut ex = rs.get_variable_boxed(cstr16!("OsIndications"), &VariableVendor::GLOBAL_VARIABLE).expect("could not read variable");
             ex.0[0] |= 1;
             rs.set_variable(cstr16!("OsIndications"), &VariableVendor::GLOBAL_VARIABLE, ex.1, ex.0.as_ref()).expect("couldn't set variable");
