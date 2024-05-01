@@ -4,28 +4,28 @@
 extern crate alloc;
 
 use alloc::boxed::Box;
-use alloc::format;
+
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use core::mem::MaybeUninit;
+
 use core::ops::BitAnd;
 use core::str::from_utf8;
 use core::usize;
 
 use serde::Serialize;
 use core::panic::PanicInfo;
-use serde_json::to_string;
-use uefi::{Char16, cstr16, CStr16, entry, Guid, Handle, prelude::RuntimeServices, print, println, Status, table::runtime::VariableKey};
-use uefi::data_types::{EqStrUntilNul, FromSliceWithNulError};
-use uefi::fs::FileSystem;
+
+use uefi::{Char16, cstr16, CStr16, entry, Handle, prelude::RuntimeServices, print, println, Status, table::runtime::VariableKey};
+
+
 use uefi::prelude::{Boot, SystemTable};
 use uefi::proto::loaded_image::LoadedImage;
-use uefi::proto::media::file::{Directory, File, FileAttribute, FileHandle, FileInfo, FileMode, RegularFile};
-use uefi::proto::shell_params::ShellParameters;
+use uefi::proto::media::file::{File, FileAttribute, FileInfo, FileMode};
+
 use uefi::table::runtime::{ResetType, VariableAttributes, VariableVendor};
 use getargs::{Arg, Options};
-use ucs2::Error;
-use uefi::fs::Path;
+
+
 
 static mut ST_PTR: *mut SystemTable<Boot> = core::ptr::null_mut();
 
@@ -54,7 +54,7 @@ unsafe fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
     let args: Vec<String>;
     let rs: &RuntimeServices;
     let keys: Vec<VariableKey>;
-    let mut vars: Vec<UefiVar>;
+    let vars: Vec<UefiVar>;
     let mut u16buf: [u16; 0xfff] = [0u16; 0xfff];
     let mut json: String;
 
@@ -82,7 +82,6 @@ unsafe fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
     //loop vars
     let mut temp_var: UefiVar = UefiVar::default();
     let mut ucsbuf: [u8; 0xfff] = [0u8; 0xfff];
-    let mut buflen: usize;
 
     rs = st.runtime_services();
     
@@ -134,9 +133,7 @@ unsafe fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
 
     if output_file != "-" {
         let mut file = open_file!(&output_file, FileMode::CreateReadWrite);
-
-        // println!("write file {:?}", file);
-
+        
         file.write("[".as_bytes()).expect("error writing to file");
         file.flush().expect("error flushing buffer to file (beginning)");
         file.close();
@@ -146,7 +143,7 @@ unsafe fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
 
     keys = rs.variable_keys().expect("error getting variable keys: {}");
     vars = Vec::with_capacity(keys.len());
-    for (i, k) in keys.iter().enumerate() {
+    for k in keys.iter() {
         // println!("LOOP");
         temp_var.name = cstr16_to_string(k.name().unwrap(), &mut ucsbuf).expect("couldn't convert name to utf-8");
 
@@ -168,7 +165,6 @@ unsafe fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
 
         json = serde_json::to_string(&temp_var).expect("error serializing var");
         if output_file != "-" {
-            // println!("write arg to file {}", i);
             let mut file = open_file!(&output_file, FileMode::ReadWrite);
             seek_end!(file);
 
@@ -191,9 +187,7 @@ unsafe fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
     } else {
         println!("]");
     }
-
-    // println!("DONE");
-
+    
     if reboot {
         //skip if not supported
         if rs.get_variable_boxed(cstr16!("OsIndications"), &VariableVendor::GLOBAL_VARIABLE).unwrap_or((Box::new([0u8]), VariableAttributes::default())).0[0].bitand(1) > 0 {
@@ -217,7 +211,6 @@ fn cstr16_to_string(c: &CStr16, buf: &mut [u8]) -> Result<String, ucs2::Error> {
 
 
 fn string_to_cstr16<'a>(s: &String, buf: &'a mut [u16]) -> &'a CStr16 {
-    // println!("s2c16");
     let len: usize = ucs2::encode(s, buf).expect("error encoding to ucs2");
     if len >= buf.len() {
         panic!("buffer too small to fit extra null byte {} vs {}", len, buf.len());
