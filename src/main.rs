@@ -167,14 +167,14 @@ fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
                         Filter::KeepVolatile => { if temp_var.attributes.non_volatile { continue; } }
                         Filter::KeepPersistent => { if !temp_var.attributes.non_volatile { continue; } }
                     }
-                    
+
                     match rs.set_variable(
                         string_to_cstr16(&var.name, &mut u16buf),
                         &VariableVendor(Guid::parse_or_panic(var.vendor_guid.as_str())),
                         var.attributes.into(),
                         var.data.deref(),
                     ) {
-                        Ok(s) => println!("wrote \"{}\" {}b", var.name, var.data_len),
+                        Ok(_) => println!("wrote \"{}\" {}b", var.name, var.data_len),
                         Err(s) => match s.status() {
                             Status::WRITE_PROTECTED => println!("failed to write \"{}\" because it was write protected", var.name),
                             _ => panic!("failed to set variable {}: {}", var.name, s)
