@@ -123,10 +123,9 @@ fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
             Arg::Short('h') | Arg::Short('?') | Arg::Long("help") => {
                 println!(r"
                 uefivardumper takes five optional parameters: -v[true/false], -r, -f[filename], -d, and -w.
-                    -v specifies if the saved/written variables are volatile or not (-vtrue only saves voltatile, -vfalse only saves persistent)
+                    -v specifies if the saved/written variables are volatile or not (-vtrue only saves/writes voltatile, -vfalse only saves/writes persistent)
                         not specifying the variable will save all variables.
                     -f specifies the dump filename (path is relative to the drive uefivardumper is stored on) defaults to - for stdout
-                        example: uefivardump.efi -vtrue -ftest.json
                     -r reboot to uefi after dump is finished
                     -w writes vars in dump to uefi (-f must be specified)
                     -d dry run (does everything but actually write the variable and restart)");
@@ -163,6 +162,12 @@ fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
                 println!("skipping {} because it needs authentication", var.name)
             } else {
                 if !dry_run {
+                    match volatility_filter {
+                        Filter::KeepAll => {}
+                        Filter::KeepVolatile => { if temp_var.attributes.non_volatile { continue; } }
+                        Filter::KeepPersistent => { if !temp_var.attributes.non_volatile { continue; } }
+                    }
+                    
                     match rs.set_variable(
                         string_to_cstr16(&var.name, &mut u16buf),
                         &VariableVendor(Guid::parse_or_panic(var.vendor_guid.as_str())),
