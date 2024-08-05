@@ -122,7 +122,7 @@ fn main(image: Handle, mut st: SystemTable<Boot>) -> Status {
             //? won't be used because of efishell help hijacking it but might as well keep it
             Arg::Short('h') | Arg::Short('?') | Arg::Long("help") => {
                 println!(r"
-                uefivardumper takes five optional parameters: -v[true/false], -r,and -f[filename].
+                uefivardumper takes five optional parameters: -v[true/false], -r, -f[filename], -d, and -w.
                     -v specifies if the saved/written variables are volatile or not (-vtrue only saves voltatile, -vfalse only saves persistent)
                         not specifying the variable will save all variables.
                     -f specifies the dump filename (path is relative to the drive uefivardumper is stored on) defaults to - for stdout

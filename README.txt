@@ -2,11 +2,13 @@ uefivardump is a tool to dump uefi variables to json (file or stdout). You can r
 
 use vdd (https://github.com/ambeloe/vdd) for simple comparisons between dumps
 
-uefivardumper takes three optional parameters: -v[true/false], -r,and -f[filename].
-    -v specifies if the saved variables are volatile or not (-vtrue only saves voltatile, -vfalse only saves persistent)
+v1 dumps are not compatible with v2 and vice-versa
+
+uefivardumper takes five optional parameters: -v[true/false], -r, -f[filename], -d, and -w.
+    -v specifies if the saved/written variables are volatile or not (-vtrue only saves voltatile, -vfalse only saves persistent)
         not specifying the variable will save all variables.
-    -f specifies the output filename (path is relative to the drive uefivardumper is stored on)
-        set to - for stdout output
-        defaults to uefivardumpYYYY-MM-DDTHH_MM_SS.json
+    -f specifies the dump filename (path is relative to the drive uefivardumper is stored on) defaults to - for stdout
         example: uefivardump.efi -vtrue -ftest.json
     -r reboot to uefi after dump is finished
+    -w writes vars in dump to uefi (-f must be specified)
+    -d dry run (does everything but actually write the variable and restart)
